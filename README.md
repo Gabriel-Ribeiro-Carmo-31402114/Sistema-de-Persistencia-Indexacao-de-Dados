@@ -23,5 +23,5 @@ Para evitar conflitos de nomenclatura e manter a consistência de todo o ecossis
 <br>
 
 ## Tecnologias e Compilação
-O projeto foi construído utilizando apenas as bibliotecas nativas da linguagem C++ para manipulação binária de arquivos em disco (`fseek`, `fread`, `fwrite`).
+O projeto foi construído utilizando as bibliotecas nativas da linguagem C++ para manipulação de arquivos em disco (`fseek`, `fread`, `fwrite`).
 
