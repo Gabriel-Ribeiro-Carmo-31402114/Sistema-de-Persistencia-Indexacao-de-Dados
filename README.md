@@ -5,9 +5,10 @@ Orientada ao domínio de um catálogo simples para o TCG "Magic: The Gathering",
 # Padronização de Código p/Trabalho em Equipe
 Exemplo: Fulano Ciclano Corre
 
-arquivo___: fulano_ciclano_corre
-diretório_: Fulano Ciclano Corre
-variável__: fulanoCiclanoCorre
-função____: fulano_ciclano_corre()
+arquivo___: fulano_ciclano_corre\n
+diretório_: Fulano Ciclano Corre\n
+variável__: fulanoCiclanoCorre\n
+função____: fulano_ciclano_corre()\n
+
 
 
