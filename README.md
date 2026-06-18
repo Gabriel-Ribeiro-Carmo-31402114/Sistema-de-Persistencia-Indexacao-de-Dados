@@ -17,10 +17,10 @@ Para evitar conflitos de nomenclatura e manter a consistência no projeto, adoto
 
 | Elemento de Código | Exemplo Prático |
 | :--- | :--- |
-| **Diretório** | `Fulano Ciclano Corre/` |
-| **Arquivo** | `fulano_ciclano_corre.cpp` |
-| **Variável** | `fulanoCiclanoCorre` |
-| **Função** | `fulano_ciclano_corre()` |
+| Diretório | `Fulano Ciclano Corre/` |
+| Arquivo** | `fulano_ciclano_corre.cpp` |
+| Variável | `fulanoCiclanoCorre` |
+| Função | `fulano_ciclano_corre()` |
 
 <br>
 
