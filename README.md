@@ -12,7 +12,7 @@ Destinado como um dos requisitos de avaliação da disciplina de Organização e
 <br>
 
 ## Padronização de Código
-Para evitar conflitos de nomenclatura e manter a consistência de todo o ecossistema do projeto, o grupo adotou estritamente as seguintes convenções de estilo.
+Para evitar conflitos de nomenclatura e manter a consistência no projeto, adotou-se as seguintes convenções:
 > **Exemplo Base de Referência:** *Fulano Ciclano Corre*
 
 | Elemento de Código | Exemplo Prático |
