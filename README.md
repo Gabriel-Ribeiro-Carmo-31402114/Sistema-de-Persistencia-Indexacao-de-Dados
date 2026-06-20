@@ -46,7 +46,7 @@ O projeto foi construído utilizando as bibliotecas nativas da linguagem C++ par
 
 | Métrica Avaliada | Valor em Pontos | Foi Realizado? |
 | :--- | :--- | :--- |
-| Registros de Tamanho Variável       `| 2.0 pts | não |
+| Registros de Tamanho Variável________| 2.0 pts | não |
 | Árvore B+ em Disco | 0.5 pts | não |
 | Vacuum (Desfragmentador) | 0.5 pts | não |
 
