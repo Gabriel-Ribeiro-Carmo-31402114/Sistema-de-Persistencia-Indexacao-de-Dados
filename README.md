@@ -32,7 +32,8 @@ O projeto foi construído utilizando as bibliotecas nativas da linguagem C++ par
 ## Comanda Principal do Trabalho
 > **Abaixo estão os tópicos de avaliação atendidos pela equipe :**
 
-**| Métrica Avaliada | Valor em Pontos | Foi Realizado? |**
+| Métrica Avaliada | Valor em Pontos | Foi Realizado? |
+| :--- | :--- | :--- |
 | Operações de CRUD Completas em Disco | 3.0 pts | não |
 | Gerenciamento de Espaço (LED) | 1.0 pts | não |
 | Indexação Secundária e Lista Invertida | 3.0 pts | não |
@@ -43,7 +44,8 @@ O projeto foi construído utilizando as bibliotecas nativas da linguagem C++ par
 ## Comanda Secundária: Pts Extras
 > **Abaixo estão os tópicos de avaliação atendidos pela equipe :**
 
-**| Métrica Avaliada | Valor em Pontos | Foi Realizado? |**
+| Métrica Avaliada | Valor em Pontos | Foi Realizado? |
+| :--- | :--- | :--- |
 | Registros de Tamanho Variável | 2.0 pts | não |
 | Árvore B+ em Disco | 0.5 pts | não |
 | Vacuum (Desfragmentador) | 0.5 pts | não |
