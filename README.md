@@ -27,6 +27,8 @@ Para evitar conflitos de nomenclatura e manter a consistência no projeto, adoto
 ## Tecnologias e Compilação
 O projeto foi construído utilizando as bibliotecas nativas da linguagem C++ para manipulação de arquivos em disco (`fseek`, `fread`, `fwrite`).
 
+<br>
+
 ## Comanda do Trabalho
 > **Abaixo estão os tópicos de avaliação atendidos pela equipe :** 
 
