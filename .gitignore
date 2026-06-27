@@ -1,0 +1,30 @@
+# Compiled Object files, templates, shared directories
+*.o
+*.obj
+*.so
+*.dylib
+*.dll
+
+# Compiled Executables
+arbore
+arbore.exe
+*.exe
+*.out
+*.app
+
+# Project-specific generated binary files
+*.bin
+
+# VS Code directory configuration
+.vscode/ipch/
+.vscode/.browse.vc.db*
+.vscode/c_cpp_properties.json
+.vscode/launch.json
+
+# Agent/temporary logs and metadata
+.claude/
+
+# OS files
+.DS_Store
+Thumbs.db
+db.json
