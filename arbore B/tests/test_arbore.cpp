@@ -46,6 +46,7 @@
 #include <functional>
 #include <vector>
 #include <string>
+#include <stdexcept>
 
 // ---- bring in all project headers ----
 #include "../Carta/carta.hpp"

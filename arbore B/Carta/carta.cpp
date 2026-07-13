@@ -5,7 +5,7 @@
 
 
 void carta_inicializar(Carta &carta) {
-    // Zera o registro inteiro (campos textuais ficam com '\0', ints com 0).
+    // Preenche a struct com zeros e define como ativo e sem proximo na LED
     std::memset(&carta, 0, sizeof(Carta));
     carta.flagRemovido = carta_const::FLAG_ATIVO;
     carta.proximoLed   = carta_const::LED_NULO;
@@ -16,7 +16,7 @@ void carta_copiar_texto(char *destino, const char *origem, int capacidade) {
     if (capacidade <= 0) {
         return;
     }
-    // Copia no maximo (capacidade - 1) bytes e garante terminacao nula.
+    // Copia texto limitando ao tamanho do buffer e garante terminacao nula
     std::strncpy(destino, origem, static_cast<size_t>(capacidade) - 1);
     destino[capacidade - 1] = '\0';
 }

@@ -1,11 +1,6 @@
 #include "led.hpp"
 
-/*
- * MODULO Led — implementacao da Lista de Espacos Disponiveis (free list LIFO).
- * A cabeca da lista vive no cabecalho de cartas.bin; o encadeamento usa o
- * campo proximoLed de cada registro lapide.
- */
-
+// Marca um registro como removido logicamente e o insere no topo da LED.
 bool led_empilhar_slot(FILE *arquivo, int indice) {
     if (indice < 0) {
         return false;
@@ -21,17 +16,18 @@ bool led_empilhar_slot(FILE *arquivo, int indice) {
         return false;
     }
 
-    // PUSH: o registro removido aponta para a antiga cabeca; vira a nova cabeca.
-    registro.flagRemovido = carta_const::FLAG_REMOVIDO; // '*'
-    registro.proximoLed   = cabecalho.ledCabeca;        // encadeia
+    // O registro vira o novo topo da LED e aponta para o topo anterior (LIFO)
+    registro.flagRemovido = carta_const::FLAG_REMOVIDO;
+    registro.proximoLed   = cabecalho.ledCabeca;
     if (!gda_gravar_registro(arquivo, indice, registro)) {
         return false;
     }
 
-    cabecalho.ledCabeca = indice; // nova cabeca da LED
+    cabecalho.ledCabeca = indice;
     return gda_gravar_cabecalho(arquivo, cabecalho);
 }
 
+// Retorna o indice de um slot livre para gravação (reuso ou append).
 int led_obter_slot_livre(FILE *arquivo, bool &reutilizado) {
     CabecalhoArquivo cabecalho;
     if (!gda_ler_cabecalho(arquivo, cabecalho)) {
@@ -39,8 +35,8 @@ int led_obter_slot_livre(FILE *arquivo, bool &reutilizado) {
         return -1;
     }
 
+    // Se a LED nao estiver vazia, remove o elemento do topo (POP)
     if (cabecalho.ledCabeca != carta_const::LED_NULO) {
-        // REUSO (pop): desempilha a cabeca da LED.
         int indiceReuso = cabecalho.ledCabeca;
 
         Carta registro;
@@ -49,7 +45,7 @@ int led_obter_slot_livre(FILE *arquivo, bool &reutilizado) {
             return -1;
         }
 
-        // A nova cabeca da LED passa a ser o proximo do slot reaproveitado.
+        // O novo topo da LED passa a ser o proximo elemento da lista
         cabecalho.ledCabeca = registro.proximoLed;
         if (!gda_gravar_cabecalho(arquivo, cabecalho)) {
             reutilizado = false;
@@ -60,7 +56,7 @@ int led_obter_slot_livre(FILE *arquivo, bool &reutilizado) {
         return indiceReuso;
     }
 
-    // APPEND: nenhuma lapide disponivel -> novo slot no fim do arquivo.
+    // Caso contrario, aloca um novo slot no final do arquivo
     int novoIndice = cabecalho.totalRegistros;
     cabecalho.totalRegistros += 1;
     if (!gda_gravar_cabecalho(arquivo, cabecalho)) {

@@ -6,12 +6,7 @@
 #include "../Led/led.hpp"
 #include "../Indice Primario/indice_primario.hpp"
 
-/*
- * MODULO Operacoes Crud — implementacao.
- * Cada operacao mutadora mantem a consistencia entre cartas.bin, a LED e as
- * duas listas invertidas. As chamadas ao indice primario (B+) sao stubs.
- */
-
+// Abre o arquivo de dados principal e inicia os indices secundarios de Cor e CMC.
 bool crud_abrir(CatalogoCartas &catalogo, const char *caminhoDados) {
     catalogo.caminhoDados = caminhoDados;
     catalogo.arquivoDados = gda_abrir_ou_criar(caminhoDados);
@@ -23,20 +18,20 @@ bool crud_abrir(CatalogoCartas &catalogo, const char *caminhoDados) {
     return true;
 }
 
+// Fecha o arquivo de dados.
 void crud_fechar(CatalogoCartas &catalogo) {
     gda_fechar(catalogo.arquivoDados);
     catalogo.arquivoDados = nullptr;
 }
 
+// Insere uma nova carta obtendo slot livre da LED ou usando o fim do arquivo.
 int crud_criar(CatalogoCartas &catalogo, const Carta &carta) {
-    // 1. Slot via LED (reuso do mais recente) ou append no fim do arquivo.
     bool reutilizado = false;
     int slot = led_obter_slot_livre(catalogo.arquivoDados, reutilizado);
     if (slot < 0) {
         return -1;
     }
 
-    // 2. Garante que o registro gravado esteja ATIVO e sem ponteiro residual.
     Carta paraGravar = carta;
     paraGravar.flagRemovido = carta_const::FLAG_ATIVO;
     paraGravar.proximoLed   = carta_const::LED_NULO;
@@ -44,7 +39,7 @@ int crud_criar(CatalogoCartas &catalogo, const Carta &carta) {
         return -1;
     }
 
-    // 3. Indexacao secundaria (cor + cmc).
+    // Insere nos indices secundarios
     if (!is_inserir(catalogo.indiceCor, paraGravar, slot)) {
         return -1;
     }
@@ -52,31 +47,32 @@ int crud_criar(CatalogoCartas &catalogo, const Carta &carta) {
         return -1;
     }
 
-    // 4. Indice primario (B+) — STUB: chamada feita, sem efeito por enquanto.
+    // Stub do indice primario (B+)
     {
         FILE *ip = ip_abrir_ou_criar("indice_primario.bin");
-        ip_inserir(ip, paraGravar.id, slot); // retorna false (nao implementado)
+        ip_inserir(ip, paraGravar.id, slot);
         ip_fechar(ip);
     }
 
     return slot;
 }
 
+// Le o registro no indice indicado e valida se esta ativo.
 bool crud_ler_por_posicao(CatalogoCartas &catalogo, int indice, Carta &carta) {
     if (!gda_ler_registro(catalogo.arquivoDados, indice, carta)) {
         return false;
     }
-    // Registro lapide conta como "inexistente" para o leitor.
     return carta.flagRemovido != carta_const::FLAG_REMOVIDO;
 }
 
+// Sobrescreve o registro em disco e atualiza os indices secundarios se houver mudanca de valores.
 bool crud_atualizar(CatalogoCartas &catalogo, int indice, const Carta &novaCarta) {
     Carta antiga;
     if (!gda_ler_registro(catalogo.arquivoDados, indice, antiga)) {
         return false;
     }
     if (antiga.flagRemovido == carta_const::FLAG_REMOVIDO) {
-        return false; // nao atualiza registro apagado
+        return false;
     }
 
     Carta paraGravar = novaCarta;
@@ -87,13 +83,12 @@ bool crud_atualizar(CatalogoCartas &catalogo, int indice, const Carta &novaCarta
         return false;
     }
 
-    // Manutencao das listas invertidas quando a chave secundaria muda.
-    // COR: compara a string antiga com a nova.
+    // Atualiza indice de cor se o valor mudou
     if (std::strncmp(antiga.cor, paraGravar.cor, sizeof(antiga.cor)) != 0) {
         is_remover(catalogo.indiceCor, antiga, indice);
         is_inserir(catalogo.indiceCor, paraGravar, indice);
     }
-    // CMC: compara o inteiro antigo com o novo.
+    // Atualiza indice de CMC se o valor mudou
     if (antiga.custoEmMana != paraGravar.custoEmMana) {
         is_remover(catalogo.indiceCmc, antiga, indice);
         is_inserir(catalogo.indiceCmc, paraGravar, indice);
@@ -102,36 +97,38 @@ bool crud_atualizar(CatalogoCartas &catalogo, int indice, const Carta &novaCarta
     return true;
 }
 
+// Remove logicamente o registro e o encadeia na LED.
 bool crud_remover(CatalogoCartas &catalogo, int indice) {
     Carta carta;
     if (!gda_ler_registro(catalogo.arquivoDados, indice, carta)) {
         return false;
     }
     if (carta.flagRemovido == carta_const::FLAG_REMOVIDO) {
-        return true; // ja removido (idempotente)
+        return true;
     }
 
-    // 1. Remove das listas invertidas ANTES de o registro virar lapide
-    //    (precisamos da cor/cmc originais, ainda intactos em 'carta').
+    // Remove referências dos índices secundários
     is_remover(catalogo.indiceCor, carta, indice);
     is_remover(catalogo.indiceCmc, carta, indice);
 
-    // 2. Indice primario (B+) — STUB.
+    // Stub do indice primario (B+)
     {
         FILE *ip = ip_abrir_ou_criar("indice_primario.bin");
-        ip_remover(ip, carta.id); // nao implementado
+        ip_remover(ip, carta.id);
         ip_fechar(ip);
     }
 
-    // 3. Lapide + push na LED (marca flagRemovido, encadeia, atualiza cabecalho).
+    // Marca lapide e envia o slot para a LED
     return led_empilhar_slot(catalogo.arquivoDados, indice);
 }
 
+// Busca correspondencias no indice secundario de cor.
 int crud_buscar_por_cor(CatalogoCartas &catalogo, const char *cor,
                         int *resultados, int capacidade) {
     return is_buscar_por_chave(catalogo.indiceCor, cor, resultados, capacidade);
 }
 
+// Busca correspondencias no indice secundario de custo de mana.
 int crud_buscar_por_cmc(CatalogoCartas &catalogo, int custoEmMana,
                         int *resultados, int capacidade) {
     char chave[indice_sec_const::TAM_CHAVE];

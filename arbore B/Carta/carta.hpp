@@ -3,37 +3,8 @@
 
 #include <cstdint>
 
-/*
- * ============================================================================
- *  MODULO: Carta
- * ----------------------------------------------------------------------------
- *  Define o registro de dominio "Carta" (uma carta de Magic: The Gathering)
- *  gravado no arquivo de dados principal (cartas.bin).
- *
- *  INVARIANTE CRITICA: sizeof(Carta) == 200 bytes, EXATAMENTE, com a ordem
- *  de campos abaixo preservada.
- *
- *  POR QUE #pragma pack(push, 1):
- *  ------------------------------------------------------------------------
- *  A soma natural dos campos eh:
- *      1 (flagRemovido) + 4 (proximoLed) + 4 (id) + 4 (numeroDeColecao)
- *    + 50 (nome) + 4 (custoEmMana) + 15 (cor) + 30 (tipo) + 12 (raridade)
- *    + 76 (linkImagem) = 200 bytes.
- *
- *  Porem, o alinhamento padrao do compilador (ABI) insere PADDING: o campo
- *  'char flagRemovido' antes do 'int proximoLed' forcaria o int a um offset
- *  multiplo de 4, gerando 3 bytes de preenchimento (1 -> 4), e o struct
- *  passaria de 200 para 203/204 bytes (e ainda seria arredondado para cima).
- *  Isso quebraria a aritmetica de offsets em disco (offset = indice * 200).
- *
- *  #pragma pack(push, 1) forca alinhamento de 1 byte (sem padding) enquanto
- *  o struct eh declarado, e #pragma pack(pop) restaura o alinhamento normal
- *  do compilador depois. Assim o layout em memoria == layout em disco == 200B.
- *
- *  O static_assert no fim trava a invariante EM TEMPO DE COMPILACAO: se algum
- *  dia um campo mudar de tamanho, o build falha em vez de corromper o arquivo.
- * ============================================================================
- */
+// Estrutura de dados para representar uma carta de Magic com tamanho fixo de 200 bytes.
+// O #pragma pack garante que nao havera padding, mantendo o alinhamento correto em disco.
 
 #pragma pack(push, 1)
 struct Carta {
