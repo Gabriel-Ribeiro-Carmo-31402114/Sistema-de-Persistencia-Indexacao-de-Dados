@@ -20,7 +20,8 @@ FONTES := main.cpp \
           "Led/led.cpp" \
           "Indice Secundario/indice_secundario.cpp" \
           "Indice Primario/indice_primario.cpp" \
-          "Operacoes Crud/operacoes_crud.cpp"
+          "Operacoes Crud/operacoes_crud.cpp" \
+          "Menu/menu.cpp"
 
 .PHONY: all run clean
 
