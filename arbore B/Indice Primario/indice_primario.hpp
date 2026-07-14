@@ -1,4 +1,4 @@
-#ifndef INDICE_PRI11MARIO_HPP
+#ifndef INDICE_PRIMARIO_HPP
 #define INDICE_PRIMARIO_HPP
 
 #include <cstdio>
@@ -33,13 +33,17 @@ struct NoArvoreBPlus {
     
     // Padding calculado para cravar a página em 4096 bytes
     char padding[indice_primario_const::TAM_PAGINA - (
-        sizeof(bool) + (3 * sizeof(int)) + 
+        sizeof(bool) + (2 * sizeof(int)) + 
         (sizeof(int) * (indice_primario_const::ORDEM - 1)) + 
         (sizeof(int) * indice_primario_const::ORDEM) + 
         sizeof(int)
     )];
 };
 #pragma pack(pop)
+
+// Garante que as estruturas do índice primário ocupam exatamente 1 página física de 4096 bytes.
+static_assert(sizeof(CabecalhoArvore) == 4096, "CabecalhoArvore deve ter exatamente 4096 bytes");
+static_assert(sizeof(NoArvoreBPlus) == 4096, "NoArvoreBPlus deve ter exatamente 4096 bytes");
 
 // Funções base (API)
 FILE *ip_abrir_ou_criar(const char *caminho);
