@@ -110,6 +110,19 @@ int main() {
     std::printf("   rebuild cor=%s  cmc=%s\n", okCor ? "ok" : "falha", okCmc ? "ok" : "falha");
     mostrar_busca_cmc(catalogo, 1);
 
+
+    std::printf("=========================================\n");
+    std::printf("[TESTE DA ÁRVORE B+] Buscando ID 101...\n");
+    Carta cartaEncontrada;
+    // Vamos buscar o Lightning Bolt que tem o ID 101
+    if (crud_buscar_por_id(catalogo, 101, cartaEncontrada)) {
+        std::printf("SUCESSO! Carta achada na arvore B+: %s (Cor: %s)\n", cartaEncontrada.nome, cartaEncontrada.cor);
+    } else {
+        std::printf("FALHA! A Árvore B+ não encontrou o ID 101.\n");
+    }
+    std::printf("=========================================\n\n");
+
+
     crud_fechar(catalogo);
     std::printf("\n=== fim do demo ===\n");
     return 0;

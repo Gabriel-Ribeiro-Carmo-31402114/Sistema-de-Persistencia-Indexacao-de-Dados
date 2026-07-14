@@ -25,6 +25,8 @@ int crud_criar(CatalogoCartas &catalogo, const Carta &carta);
 // Le uma carta ativa pelo seu indice de registro (RRN).
 bool crud_ler_por_posicao(CatalogoCartas &catalogo, int indice, Carta &carta);
 
+bool crud_buscar_por_id(CatalogoCartas &catalogo, int id, Carta &cartaResult);
+
 // Atualiza os campos de uma carta existente, mantendo a Chave Primaria imutavel.
 bool crud_atualizar(CatalogoCartas &catalogo, int indice, const Carta &novaCarta);
 

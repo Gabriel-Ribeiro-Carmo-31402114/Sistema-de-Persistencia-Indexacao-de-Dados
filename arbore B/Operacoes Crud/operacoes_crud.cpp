@@ -47,14 +47,16 @@ int crud_criar(CatalogoCartas &catalogo, const Carta &carta) {
         return -1;
     }
 
-    // Stub do indice primario (B+)
+    // Registro no indice primario (B+) 
     {
-        FILE *ip = ip_abrir_ou_criar("indice_primario.bin");
-        ip_inserir(ip, paraGravar.id, slot);
-        ip_fechar(ip);
+        FILE *ip = ip_abrir_ou_criar("arvore_primaria.bin");
+        if (ip) {
+            ip_inserir(ip, carta.id, slot); 
+            ip_fechar(ip);
+        }
     }
 
-    return slot;
+    return slot; 
 }
 
 // Le o registro no indice indicado e valida se esta ativo.
@@ -64,6 +66,20 @@ bool crud_ler_por_posicao(CatalogoCartas &catalogo, int indice, Carta &carta) {
     }
     return carta.flagRemovido != carta_const::FLAG_REMOVIDO;
 }
+
+
+bool crud_buscar_por_id(CatalogoCartas &catalogo, int id, Carta &cartaResult) {
+    FILE *ip = ip_abrir_ou_criar("arvore_primaria.bin"); // Ajustado de "indice_primario.bin" para "arvore_primaria.bin"
+    int posicaoDisco = -1;
+    bool achou = ip_buscar(ip, id, posicaoDisco);
+    ip_fechar(ip);
+
+    if (achou) {
+        return gda_ler_registro(catalogo.arquivoDados, posicaoDisco, cartaResult);
+    }
+    return false;
+}
+
 
 // Sobrescreve o registro em disco e atualiza os indices secundarios se houver mudanca de valores.
 bool crud_atualizar(CatalogoCartas &catalogo, int indice, const Carta &novaCarta) {
