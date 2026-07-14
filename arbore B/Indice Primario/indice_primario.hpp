@@ -1,4 +1,4 @@
-#ifndef INDICE_PRIMARIO_HPP
+#ifndef INDICE_PRI11MARIO_HPP
 #define INDICE_PRIMARIO_HPP
 
 #include <cstdio>

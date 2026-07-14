@@ -26,6 +26,12 @@ void crud_fechar(CatalogoCartas &catalogo) {
 
 // Insere uma nova carta obtendo slot livre da LED ou usando o fim do arquivo.
 int crud_criar(CatalogoCartas &catalogo, const Carta &carta) {
+    // Evita duplicacao de ID
+    Carta temp;
+    if (crud_buscar_por_id(catalogo, carta.id, temp)) {
+        return -1;
+    }
+
     bool reutilizado = false;
     int slot = led_obter_slot_livre(catalogo.arquivoDados, reutilizado);
     if (slot < 0) {
@@ -75,7 +81,9 @@ bool crud_buscar_por_id(CatalogoCartas &catalogo, int id, Carta &cartaResult) {
     ip_fechar(ip);
 
     if (achou) {
-        return gda_ler_registro(catalogo.arquivoDados, posicaoDisco, cartaResult);
+        if (gda_ler_registro(catalogo.arquivoDados, posicaoDisco, cartaResult)) {
+            return cartaResult.flagRemovido != carta_const::FLAG_REMOVIDO;
+        }
     }
     return false;
 }
@@ -88,6 +96,10 @@ bool crud_atualizar(CatalogoCartas &catalogo, int indice, const Carta &novaCarta
         return false;
     }
     if (antiga.flagRemovido == carta_const::FLAG_REMOVIDO) {
+        return false;
+    }
+    // Garante que a Chave Primaria (ID) é imutavel
+    if (antiga.id != novaCarta.id) {
         return false;
     }
 
@@ -127,11 +139,13 @@ bool crud_remover(CatalogoCartas &catalogo, int indice) {
     is_remover(catalogo.indiceCor, carta, indice);
     is_remover(catalogo.indiceCmc, carta, indice);
 
-    // Stub do indice primario (B+)
+    // Remove do indice primario (B+)
     {
-        FILE *ip = ip_abrir_ou_criar("indice_primario.bin");
-        ip_remover(ip, carta.id);
-        ip_fechar(ip);
+        FILE *ip = ip_abrir_ou_criar("arvore_primaria.bin");
+        if (ip) {
+            ip_remover(ip, carta.id);
+            ip_fechar(ip);
+        }
     }
 
     // Marca lapide e envia o slot para a LED
@@ -150,4 +164,85 @@ int crud_buscar_por_cmc(CatalogoCartas &catalogo, int custoEmMana,
     char chave[indice_sec_const::TAM_CHAVE];
     std::snprintf(chave, sizeof(chave), "%d", custoEmMana);
     return is_buscar_por_chave(catalogo.indiceCmc, chave, resultados, capacidade);
+}
+
+bool crud_vacuum(CatalogoCartas &catalogo) {
+    if (catalogo.arquivoDados == nullptr) return false;
+
+    // 1. Fecha o arquivo principal atual
+    gda_fechar(catalogo.arquivoDados);
+    catalogo.arquivoDados = nullptr;
+
+    // 2. Abre o original em modo leitura e o temporário em escrita/leitura
+    FILE *origem = std::fopen(catalogo.caminhoDados, "rb");
+    if (!origem) return false;
+
+    FILE *destino = std::fopen("cartas_temp.bin", "wb+");
+    if (!destino) {
+        std::fclose(origem);
+        return false;
+    }
+
+    // 3. Lê o cabeçalho original
+    CabecalhoArquivo cabOrigem;
+    if (std::fread(&cabOrigem, sizeof(CabecalhoArquivo), 1, origem) != 1) {
+        std::fclose(origem);
+        std::fclose(destino);
+        return false;
+    }
+
+    // 4. Escreve cabeçalho inicial zerado no temporário
+    CabecalhoArquivo cabDestino;
+    cabDestino.ledCabeca = carta_const::LED_NULO;
+    cabDestino.totalRegistros = 0;
+    std::fwrite(&cabDestino, sizeof(CabecalhoArquivo), 1, destino);
+
+    // 5. Copia registros ativos sequencialmente
+    for (int i = 0; i < cabOrigem.totalRegistros; ++i) {
+        std::fseek(origem, sizeof(CabecalhoArquivo) + i * carta_const::TAMANHO_REGISTRO, SEEK_SET);
+        Carta carta;
+        if (std::fread(&carta, sizeof(Carta), 1, origem) == 1) {
+            if (carta.flagRemovido != carta_const::FLAG_REMOVIDO) {
+                std::fseek(destino, sizeof(CabecalhoArquivo) + cabDestino.totalRegistros * carta_const::TAMANHO_REGISTRO, SEEK_SET);
+                std::fwrite(&carta, sizeof(Carta), 1, destino);
+                cabDestino.totalRegistros++;
+            }
+        }
+    }
+
+    // 6. Atualiza o cabeçalho no destino
+    std::fseek(destino, 0, SEEK_SET);
+    std::fwrite(&cabDestino, sizeof(CabecalhoArquivo), 1, destino);
+
+    std::fclose(origem);
+    std::fclose(destino);
+
+    // 7. Substitui o arquivo original pelo temporário desfragmentado
+    std::remove(catalogo.caminhoDados);
+    if (std::rename("cartas_temp.bin", catalogo.caminhoDados) != 0) {
+        return false;
+    }
+
+    // 8. Reabre o arquivo de dados desfragmentado
+    catalogo.arquivoDados = gda_abrir_ou_criar(catalogo.caminhoDados);
+    if (catalogo.arquivoDados == nullptr) return false;
+
+    // 9. Reconstrói o Índice Primário (Árvore B+) do zero, pois os offsets (RRNs) mudaram
+    std::remove("arvore_primaria.bin");
+    FILE *ip = ip_abrir_ou_criar("arvore_primaria.bin");
+    if (!ip) return false;
+
+    for (int i = 0; i < cabDestino.totalRegistros; ++i) {
+        Carta carta;
+        if (gda_ler_registro(catalogo.arquivoDados, i, carta)) {
+            ip_inserir(ip, carta.id, i);
+        }
+    }
+    ip_fechar(ip);
+
+    // 10. Reconstrói os Índices Secundários do zero
+    is_reconstruir(catalogo.indiceCor, catalogo.caminhoDados);
+    is_reconstruir(catalogo.indiceCmc, catalogo.caminhoDados);
+
+    return true;
 }

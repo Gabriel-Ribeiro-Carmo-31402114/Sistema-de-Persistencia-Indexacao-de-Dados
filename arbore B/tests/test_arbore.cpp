@@ -787,10 +787,9 @@ TEST_CASE(is_reconstruir_rebuilds_index_from_live_records_only) {
 
 TEST_CASE(ip_abrir_ou_criar_stub_returns_nullptr) {
     FILE *f = ip_abrir_ou_criar("test_ip_stub.bin");
-    CHECK(f == nullptr);
-    // No file handle to close; but ip_fechar must handle nullptr gracefully.
+    CHECK(f != nullptr);
     ip_fechar(f);
-    // If we get here without a crash, the stub behaves correctly.
+    std::remove("test_ip_stub.bin");
     CHECK(true);
 }
 

@@ -41,4 +41,7 @@ int crud_buscar_por_cor(CatalogoCartas &catalogo, const char *cor,
 int crud_buscar_por_cmc(CatalogoCartas &catalogo, int custoEmMana,
                         int *resultados, int capacidade);
 
+// Executa o desfragmentador (Vacuum): remove os registros marcados como excluídos, zera a LED e reconstrói todos os índices.
+bool crud_vacuum(CatalogoCartas &catalogo);
+
 #endif // OPERACOES_CRUD_HPP
